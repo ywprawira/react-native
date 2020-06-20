@@ -11,7 +11,7 @@ const style = StyleSheet.create({
     padding: 10,
     marginTop: 10,
     marginRight: 10,
-    marginLeft:10,
+    marginLeft: 10,
   },
   field: {
     padding: 5,
@@ -30,9 +30,9 @@ const style = StyleSheet.create({
   },
   primaryButton: {
     color: 'black',
-    paddingTop:20,
-    paddingBottom:20,
-    borderRadius:10,
+    paddingTop: 20,
+    paddingBottom: 20,
+    borderRadius: 10,
     borderWidth: 1,
   },
 });
