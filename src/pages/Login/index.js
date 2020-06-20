@@ -90,19 +90,19 @@ function LoginPage({navigation}) {
               />
             </View>
             <View style={styles.field}>
-              {/* <Button
+              <Button
                 style={styles.primaryButton}
                 color="#fc6f03"
                 title="Login"
                 onPress={postLogin}
-              /> */}
-              <Button
+              />
+              {/* <Button
                 style={styles.primaryButton}
                 color="#fc6f03"
                 title="Login"
                 onPress={() =>
                   navigation.navigate('Profile', {name: 'Profile'})
-                }
+                } */}
               />
             </View>
           </View>
