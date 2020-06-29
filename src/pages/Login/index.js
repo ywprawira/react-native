@@ -1,114 +1,80 @@
-import * as React from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-  TextInput,
-  Platform,
-  Button,
-  AsyncStorage,
-} from 'react-native';
-import {mutate} from '../../services/graphql/api';
+import React, {useState} from 'react';
+import {SafeAreaView, View, Text} from 'react-native';
+import {TextInput, TouchableOpacity} from 'react-native-gesture-handler';
 import {gql} from 'apollo-boost';
-import {useState} from 'react';
+import {client, mutate} from '../../services/graphql/api';
+// import {getData, setData} from '../../helper/localStorage';
+import {connect} from 'react-redux';
+import AUTH_ACTION from '../../stores/actions/auth';
 
-import styles from '../../asset/styles';
-// import Profile from './Profile/';
+const Login = ({navigation, setSign}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('tomo@icube.us');
+  const [password, setPassword] = useState('Admin123');
 
-function LoginPage({navigation}) {
-  const [username, setUsername] = useState(Platform.OS === 'ios' ? '' : null);
-  const [password, setPassword] = useState(Platform.OS === 'ios' ? '' : null);
-
-  const storeData = async value => {
-    try {
-      let dataFormat = {
-        type: 'signIn',
-        token: value,
-      };
-      const jsonValue = JSON.stringify(dataFormat);
-      await AsyncStorage.setItem('token', jsonValue);
-    } catch (e) {
-      // saving error
-    }
-  };
-
-  //   const removeValue = async () => {
-  //     try {
-  //       await AsyncStorage.removeItem('token');
-  //     } catch (e) {
-  //       // remove error
-  //     }
-  //     console.log(done);
-  //   };
-
-  //   const checkLocal = async () => {
-  //     const value = await AsyncStorage.getItem('token');
-  //     console.log(value);
-  //   };
-
-  const postLogin = () => {
-    let schema = gql`
-      mutation generateCustomerTokenCustom($email: String!, $pass: String!) {
-        generateCustomerTokenCustom(username: $email, password: $pass) {
+  const login = async () => {
+    setIsLoading(true);
+    const schema = gql`
+      mutation generateCustomerTokenCustom(
+        $email: String!
+        $password: String!
+      ) {
+        generateCustomerTokenCustom(username: $email, password: $password) {
           token
         }
       }
     `;
-    let params = {email: username, pass: password};
+
+    const params = {
+      email: username,
+      password: password,
+    };
 
     mutate(schema, params).then(res => {
       const {data} = res;
-      const user = data.generateCustomerTokenCustom;
-      storeData(user.token);
+      let user = data.generateCustomerTokenCustom;
       console.log(user.token);
+      setIsLoading(false);
+      let dataFormat = {
+        type: 'signin',
+        token: user.token,
+      };
+      setSign(dataFormat);
+      if (user.token !== null) {
+        navigation.navigate('Homepage');
+      }
     });
   };
+
   return (
-    <>
-      <SafeAreaView>
-        <ScrollView contentInsetAdjustmentBehavior="automatic">
-          <View style={styles.formWrapper}>
-            <View style={styles.field}>
-              <Text style={styles.label}>Username</Text>
-              <TextInput
-                style={styles.input}
-                onChangeText={text => {
-                  setUsername(text);
-                }}
-              />
-            </View>
-            <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                textContentType="password"
-                secureTextEntry={true}
-                style={styles.input}
-                onChangeText={text => {
-                  setPassword(text);
-                }}
-              />
-            </View>
-            <View style={styles.field}>
-              <Button
-                style={styles.primaryButton}
-                color="#fc6f03"
-                title="Login"
-                onPress={postLogin}
-              />
-              {/* <Button
-                style={styles.primaryButton}
-                color="#fc6f03"
-                title="Login"
-                onPress={() =>
-                  navigation.navigate('Profile', {name: 'Profile'})
-                } */}
-              />
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <SafeAreaView>
+      <View>
+        <TextInput
+          placeholder="username/email"
+          value={username}
+          onChange={text => setUsername(text)}
+        />
+        <TextInput
+          placeholder="password"
+          secureTextEntry={true}
+          value={password}
+          onChange={text => setPassword(text)}
+        />
+        <TouchableOpacity
+          onPress={() => login()}
+          disabled={(username && password) || !isLoading ? false : true}>
+          {isLoading ? <Text>Loading ...</Text> : <Text>Login</Text>}
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
-}
-export default LoginPage;
+};
+
+const mapDispatchToProps = dispatch => ({
+  setSign: data => dispatch(AUTH_ACTION.set(data)),
+});
+
+export default connect(
+  null,
+  mapDispatchToProps,
+)(Login);
